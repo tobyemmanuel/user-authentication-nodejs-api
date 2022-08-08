@@ -20,7 +20,10 @@ const UsersSchema = mongoose.Schema({ //create schema for the database table
         type: String, 
         enum: ["admin", "user", "staff", "manager"], 
         default: "user"
-    }
+    },
+    resetToken: {
+        type: String
+    },
 }, {
     timestamps: true
 });
