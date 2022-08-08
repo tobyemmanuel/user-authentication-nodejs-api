@@ -1,27 +1,8 @@
-const mongoose = require('mongoose'); //import dependencies
+const express = require('express');
+const router = express.Router();
+const usersController = require('../controllers/UsersController'); //import user controller
 
-const UsersSchema = mongoose.Schema({ //create schema for the database table
-    username: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String, 
-        required: true, 
-        unique: true
-    },
-    userType: {
-        type: String, 
-        enum: ["admin", "user", "staff", "manager"], 
-        default: "user"
-    }
-}, {
-    timestamps: true
-});
+//router.get('/', controller.index)
+router.post('/auth/register', usersController.registerUser)
 
-module.exports = mongoose.model('Users', UsersSchema);
+module.exports = router;

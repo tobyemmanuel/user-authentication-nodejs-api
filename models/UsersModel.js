@@ -4,7 +4,8 @@ const UsersSchema = mongoose.Schema({ //create schema for the database table
     username: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        lowerCase: true
     },
     password: {
         type: String,
