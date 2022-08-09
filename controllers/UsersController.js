@@ -1,10 +1,11 @@
 const Users = require("../models/UsersModel")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const {check, validationResult} = require("express-validator")
 const { sendEmail } = require('../modules/Mmail');
 
 require('dotenv').config()
-const {SALT, MIN_PASSWORD} = process.env //capture constants from dotenv
+const {SALT, SECRET, MIN_PASSWORD} = process.env //capture constants from dotenv
 
 //function for register user
 exports.registerUser = async (req, res) => {
@@ -152,4 +153,101 @@ exports.passwordReset = async (req, res) => {
             .status(500)
             .json({statusCode: 500, message: "SERVER ERROR"})
         });
+}
+
+exports.loginUser = async (req, res) => {
+    const {email, password} = req.body
+    const errors = validationResult(req)
+
+    if(!errors.isEmpty())
+    return res
+    .status(400)
+    .json({
+        statusCode:400,
+        message: errors.array()
+    });
+
+    try {
+        let user = await Users.findOne({email})
+        if(!user) 
+        return res
+        .status(400)
+        .json({ 
+            statusCode:400,
+            message: "User not found"
+        });
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if(!isMatch)
+        return res
+        .status(400)
+        .json({ 
+            statusCode:400,
+            message: "User not found"
+        });
+
+        const authPayload = {
+            user: {
+                id: user.id
+            }
+        }
+
+        jwt.sign(
+            authPayload,
+            SECRET,
+            {
+                expiresIn: 84600
+            },
+            (err, token)=>{
+                if(err) throw err;
+                res
+                .status(200)
+                .json({ 
+                    statusCode:200,
+                    message: "Logged in successfully",
+                    user: {
+                        username: user.username,
+                        email: user.email,
+                        userType: user.userType
+                    },
+                    token
+                });
+            }
+        )
+
+    } catch (error) {
+        res.status(500).send("SERVER ERROR!")
+    }
+}
+
+exports.adminRoute = async (req, res) => {
+    return res
+    .status(200)
+    .json({
+        statusCode: 200,  message: "This is the admin route" //success message
+    });
+}
+
+exports.staffRoute = async (req, res) => {
+    return res
+    .status(200)
+    .json({
+        statusCode: 200,  message: "This is the staff route" //success message
+    });
+}
+
+exports.managerRoute = async (req, res) => {
+    return res
+    .status(200)
+    .json({
+        statusCode: 200,  message: "This is the manager route" //success message
+    });
+}
+
+exports.loggedInRoute = async (req, res) => {
+    return res
+    .status(200)
+    .json({
+        statusCode: 200,  message: "You are logged in" //success message
+    });
 }
