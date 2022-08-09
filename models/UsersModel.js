@@ -1,6 +1,6 @@
 const mongoose = require('mongoose'); //import dependencies
 
-const UsersSchema = mongoose.Schema({ //create schema for the database table
+const UsersSchema = mongoose.Schema({ //create schema for the user database table
     username: {
         type: String,
         required: true,

@@ -1,9 +1,9 @@
-const Users = require("../models/UsersModel")
-const InvTokens = require("../models/InvTokens")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-const {check, validationResult} = require("express-validator")
-const { sendEmail } = require('../modules/Mmail');
+const Users = require("../models/UsersModel") // user schema
+const InvTokens = require("../models/InvTokens") // model for invalidated tokens to ensure total logout
+const bcrypt = require("bcryptjs") //load bcrypt
+const jwt = require("jsonwebtoken") //load JWT
+const {validationResult} = require("express-validator") // load for validating params
+const { sendEmail } = require('../modules/Mmail'); //module to send mails for password recovery
 
 require('dotenv').config()
 const {SALT, SECRET, MIN_PASSWORD} = process.env //capture constants from dotenv
@@ -156,10 +156,12 @@ exports.passwordReset = async (req, res) => {
         });
 }
 
+// function for user log in
 exports.loginUser = async (req, res) => {
-    const {email, password} = req.body
-    const errors = validationResult(req)
+    const {email, password} = req.body //load params
+    const errors = validationResult(req) //check params
 
+    //return issues with params
     if(!errors.isEmpty())
     return res
     .status(400)
@@ -169,6 +171,7 @@ exports.loginUser = async (req, res) => {
     });
 
     try {
+        //check if user exists
         let user = await Users.findOne({email})
         if(!user) 
         return res
@@ -178,6 +181,7 @@ exports.loginUser = async (req, res) => {
             message: "User not found"
         });
 
+        //check if password is correct
         const isMatch = await bcrypt.compare(password, user.password)
         if(!isMatch)
         return res
@@ -187,12 +191,14 @@ exports.loginUser = async (req, res) => {
             message: "User not found"
         });
 
+        //prepare JWT payload
         const authPayload = {
             user: {
                 id: user.id
             }
         }
 
+        //create JWT token
         jwt.sign(
             authPayload,
             SECRET,
@@ -217,13 +223,15 @@ exports.loginUser = async (req, res) => {
         )
 
     } catch (error) {
-        res.status(500).send("SERVER ERROR!")
+        res.status(500).send("SERVER ERROR!") //catch errors
     }
 }
 
+//logout function
 exports.logOut = async (req, res) => {
-    const token = req.header("x-auth-token")
+    const token = req.header("x-auth-token") //capture token from header
 
+    //check if token is valid
     if(!token)
         return res
         .status(401)
@@ -233,7 +241,9 @@ exports.logOut = async (req, res) => {
         });
 
     try {
+        //check token in among invalidated tokens to prevent duplicates
         let isExistToken = await InvTokens.findOne({token})
+        //add token to invalid token if it does not exist
         if(!isExistToken){
             const newLoggedOutToken = new InvTokens({
                 token: token,
@@ -242,6 +252,7 @@ exports.logOut = async (req, res) => {
             await newLoggedOutToken.save(); //log terminated token to prevent further use
         }
 
+        //clear token from cookies
         res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
         return res
         .status(200)
@@ -251,7 +262,7 @@ exports.logOut = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.status(500).send("SERVER ERROR!")
+        res.status(500).send("SERVER ERROR!") //capture error
     }
 
 }

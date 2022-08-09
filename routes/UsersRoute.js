@@ -6,8 +6,37 @@ const { auth, checkAdmin, checkManager, checkStaff }= require("../middleware/aut
 require('dotenv').config()
 const {MIN_PASSWORD} = process.env //capture constants from dotenv
 
-//router.get('/', controller.index)
+/*
+IMPLEMENTATION
+The register route uses POST METHOD 
+{
+  "username": "tobyq",
+  "email": "tobyemmanuelq@gmail.com",
+  "password": "Error",
+  "passwordConfirm": "Error",
+  "userType": "user"
+}
+
+The Password recovery uses the POST Method and sends a reset mail to user
+{
+  "email": "tobyemmanuels@gmail.com"
+}
+
+The Password reset uses the POST Method
+{
+  "email": "tobyemmanuel@gmail.com",
+  "resetToken": "$2a$10$hb7TgGV89cZ5dQJWSKpu4O",
+  "password": "Error"
+}
+
+The login uses the POST Method
+{
+  "email": "tobyemmanuelm@gmail.com",
+  "password": "Error"
+}
+*/
 router.post('/auth/register', usersController.registerUser)
+
 router.post('/auth/passwordrecovery', usersController.passwordRecovery)
 router.post('/auth/passwordreset', usersController.passwordReset)
 router.post('/auth/login', [

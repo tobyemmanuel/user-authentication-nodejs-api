@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+//Schema to handle invalidated tokens and prevent reuse
 const InvTokens = mongoose.Schema({
     token: {
         type: String,
