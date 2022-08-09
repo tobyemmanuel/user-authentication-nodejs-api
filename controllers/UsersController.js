@@ -1,4 +1,5 @@
 const Users = require("../models/UsersModel")
+const InvTokens = require("../models/InvTokens")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const {check, validationResult} = require("express-validator")
@@ -220,7 +221,43 @@ exports.loginUser = async (req, res) => {
     }
 }
 
-exports.adminRoute = async (req, res) => {
+exports.logOut = async (req, res) => {
+    const token = req.header("x-auth-token")
+
+    if(!token)
+        return res
+        .status(401)
+        .json({ 
+            statusCode: 401, 
+            message: "No token provided."
+        });
+
+    try {
+        let isExistToken = await InvTokens.findOne({token})
+        if(!isExistToken){
+            const newLoggedOutToken = new InvTokens({
+                token: token,
+                reason: "terminated"
+            });
+            await newLoggedOutToken.save(); //log terminated token to prevent further use
+        }
+
+        res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+        return res
+        .status(200)
+        .json({
+            statusCode: 200,  message: "Logged out successfully" //success message
+        });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).send("SERVER ERROR!")
+    }
+
+}
+
+//admin-protected route
+exports.adminRoute = (req, res) => {
     return res
     .status(200)
     .json({
@@ -228,7 +265,8 @@ exports.adminRoute = async (req, res) => {
     });
 }
 
-exports.staffRoute = async (req, res) => {
+//staff-protected route
+exports.staffRoute = (req, res) => {
     return res
     .status(200)
     .json({
@@ -236,7 +274,8 @@ exports.staffRoute = async (req, res) => {
     });
 }
 
-exports.managerRoute = async (req, res) => {
+//manager-protected route
+exports.managerRoute = (req, res) => {
     return res
     .status(200)
     .json({
@@ -244,7 +283,8 @@ exports.managerRoute = async (req, res) => {
     });
 }
 
-exports.loggedInRoute = async (req, res) => {
+//loggedin-protected route
+exports.loggedInRoute = (req, res) => {
     return res
     .status(200)
     .json({

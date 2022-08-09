@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken")
 const Users = require("../models/UsersModel")
+const InvTokens = require("../models/InvTokens")
 require('dotenv').config()
 const SECRET = process.env.SECRET;
 
-exports.auth = (req, res, next) => {
+exports.auth = async (req, res, next) => {
     //get token from header
     const token = req.header("x-auth-token")
 
@@ -16,6 +17,10 @@ exports.auth = (req, res, next) => {
         });
 
     try {
+        let isExistToken = await InvTokens.findOne({token})
+        if(isExistToken) return res.status(401).send("Token was loggedout already")
+
+
        const decode = jwt.verify(token, SECRET)
        req.user = decode.user
        next()

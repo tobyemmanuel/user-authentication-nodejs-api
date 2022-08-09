@@ -14,6 +14,7 @@ router.post('/auth/login', [
     check("email", "Please provide your email").isEmail(),
     check("password", "Please provide your password").isLength({ min: MIN_PASSWORD })
 ], usersController.loginUser)
+router.post('/auth/logout', usersController.logOut)
 router.post('/auth/user', auth, usersController.loggedInRoute)
 router.post('/auth/staff', auth, checkStaff, usersController.staffRoute)
 router.post('/auth/manager', auth, checkManager, usersController.managerRoute)
