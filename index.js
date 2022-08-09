@@ -7,6 +7,11 @@ const {
 
 const routes = require("./routes/UsersRoute");
 
+//check if env file is setup
+if(!PORT){
+  console.log('Please setup dotenv file first')
+  process.exit(); //close
+}
 
 const app = express();
 app.use(express.json({extended: false})) // for parsing application/json
